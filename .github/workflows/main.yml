@@ -13,7 +13,19 @@ jobs:
     
     steps:
        - name: Checkout
-         uses: actions/checkout@v2
+         uses: actions/checkout@v4
+         
+       - name: Setup JAVA
+         uses: actions/setup-java@v4
+         with:
+          java-version: '17'
+          distribution: 'temurin'
+   
+       - name: Maven Setup
+         uses: s4u/setup-maven-action@3.9.6
+
+       - name: Run the Maven verify phase
+         run: mvn --batch-mode --update-snapshots verify
        
        - name: Setting up
          run: |
