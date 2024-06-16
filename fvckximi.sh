@@ -2,7 +2,7 @@
 
 dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
-apktool="java -jar $work_dir/bin/apktool.jar"
+apktool="java -jar $dir/bin/apktool.jar"
 echo "Starting script in directory: $dir"
 
 apk_util() {
