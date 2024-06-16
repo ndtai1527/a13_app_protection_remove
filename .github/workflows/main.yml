@@ -23,7 +23,7 @@ jobs:
   
        - name: Setting up
          run: |
-            sudo apt-get install -y git default-jre wget zip unzip aapt axel python3-pip zipalign apksigner xmlstarlet libgtest-dev libprotobuf-dev libunwind-dev libusb-1.0-0-dev libzstd-dev attr ccache clang golang libbrotli-dev \
+            sudo apt-get install -y git default-jre wget zip unzip aapt axel python3-pip zipalign apksigner xmlstarlet libgtest-dev libprotobuf-dev libunwind-dev libusb-1.0-0-dev libzstd-dev attr ccache clang golang libbrotli-dev 
             pip3 install ConfigObj
   
        - name: Set up Time 
