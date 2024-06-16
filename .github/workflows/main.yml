@@ -20,10 +20,11 @@ jobs:
          with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
   
        - name: Setting up
          run: |
-            sudo apt-get install -y git default-jre wget zip unzip axel python3-pip zipalign apksigner xmlstarlet
+            sudo apt-get install -y git default-jre wget zip unzip axel python3-pip zipalign apksigner xmlstarlet libgtest-dev libprotobuf-dev libunwind-dev libusb-1.0-0-dev libzstd-dev attr ccache clang golang libbrotli-dev \
             pip3 install ConfigObj
   
        - name: Set up Time 
