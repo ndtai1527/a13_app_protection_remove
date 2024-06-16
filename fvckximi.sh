@@ -2,7 +2,7 @@
 
 dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
-
+apktool="java -jar $work_dir/bin/apktool.jar"
 echo "Starting script in directory: $dir"
 
 apk_util() {
@@ -14,7 +14,7 @@ apk_util() {
         if [[ -f $dir/services.jar ]]; then
             sudo cp $dir/services.jar $dir/jar_temp
             sudo chown $(whoami) $dir/jar_temp/$2
-            apktool d $dir/jar_temp/$2 -o $dir/jar_temp/$2.out
+            $apktool d $dir/jar_temp/$2 -o $dir/jar_temp/$2.out
             if [[ -d $dir/jar_temp/"$2.out" ]]; then
                 rm -rf $dir/jar_temp/$2
             fi
@@ -24,7 +24,7 @@ apk_util() {
             if [[ -d $dir/jar_temp/$2.out ]]; then
                 cd $dir/jar_temp/$2.out
                 echo "Inside apk_util (assemble), current directory: $(pwd)"
-                apktool b $dir/jar_temp/$2.out -o $dir/jar_temp/$2
+                $apktool b $dir/jar_temp/$2.out -o $dir/jar_temp/$2
                 if [[ -f $dir/jar_temp/$2 ]]; then
                     sudo cp -rf $dir/jar_temp/$2 $dir/module/system/framework
                     final_dir="$dir/module/*"
