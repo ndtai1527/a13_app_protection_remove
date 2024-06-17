@@ -9,7 +9,7 @@ jar_util()
 {
 	cd $dir
 	#binary
-	if [[ $3 == "fw" ]];
+	if [[ $3 == "fw" ]]; then
 		bak="java -jar $dir/bin/baksmali.jar d"
 		sma="java -jar $dir/bin/smali.jar a"
 	fi
