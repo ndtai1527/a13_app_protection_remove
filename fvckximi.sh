@@ -19,8 +19,8 @@ jar_util()
 
 	if [[ $1 == "d" ]]; then
 		echo -ne "====> Patching $2 : "
-		if [[ -f $dir/miui-services.jar ]]; then
-			sudo cp $dir/miui-services.jar $dir/jar_temp
+		if [[ -f $dir/services.jar ]]; then
+			sudo cp $dir/services.jar $dir/jar_temp
 			sudo chown $(whoami) $dir/jar_temp/$2
 			unzip $dir/jar_temp/$2 -d $dir/jar_temp/$2.out  >/dev/null 2>&1
 			if [[ -d $dir/jar_temp/"$2.out" ]]; then
@@ -58,7 +58,7 @@ jar_util()
 				#zip -r -j -0 $dir/jar_temp/$2_notal $dir/jar_temp/$2.out/.
 				zipalign 4 $dir/jar_temp/$2_notal $dir/jar_temp/$2
 				if [[ -f $dir/jar_temp/$2 ]]; then
-					sudo cp -rf $dir/jar_temp/$2 $dir/module/system/system_ext/miui-services.jar
+					sudo cp -rf $dir/jar_temp/$2 $dir/module/system/system_ext/services.jar
 					final_dir="$dir/module/*"
 					#7za a -tzip "$dir/miui-services_patched_$(date "+%d%m%y").zip" $final_dir
 					echo "Success"
