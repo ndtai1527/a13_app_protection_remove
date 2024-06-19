@@ -36,7 +36,7 @@ jobs:
       - name: Download Services.jar
         run: |
           axel -n $(nproc) ${{ github.event.inputs.ROM_URL }}
-          mv $(basename ${{ github.event.inputs.ROM_URL }}) services.jar
+          
 
       - name: PATCH-ING
         run: |
