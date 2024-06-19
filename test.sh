@@ -31,7 +31,7 @@ sudo cp $dir/services.jar $dir/jar_temp
 
 cd $dir
 echo "Running apkE decompilation..."
-$apkE d -f -i $dir/jar_temp/services.jar -o $dir/tmp/services  > /dev/null 2>&1  
+java -jar $dir/bin/apkE.jar d -f -i $dir/jar_temp/services.jar -o $dir/tmp/services  > /dev/null 2>&1  
 echo "Searching and modifying smali files..."
 s0=$(find -name "PermissionManagerServiceImpl.smali")
 [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
@@ -62,7 +62,7 @@ repM 'isPlatformSigned' true 'PackageManagerService$PackageManagerInternalImpl.s
 repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
 
 echo "Running apkE compilation..."
-$apkE b -f -i $dir/tmp/services -o $dir/tmp/services_patched.jar > /dev/null 2>&1
+java -jar $dir/bin/apkE.jar b -f -i $dir/tmp/services -o $dir/tmp/services_patched.jar > /dev/null 2>&1
 
 echo "Setting up directories..."
 cp $dir/tmp/services_patched.jar $dir/module/system/framework
