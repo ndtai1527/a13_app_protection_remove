@@ -25,10 +25,9 @@ repM() {
     fi
 }
 
-if [[ -f $dir/services.jar ]]; then
-    mkdir $dir/jar_temp
-    sudo cp $dir/services.jar $dir/jar_temp
-fi
+
+sudo cp $dir/services.jar $dir/jar_temp
+
 
 
 echo "Running apkE decompilation..."
