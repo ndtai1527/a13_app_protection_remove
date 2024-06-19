@@ -68,7 +68,7 @@ services() {
 }
 
 echo "Setting up directories..."
-sudo cp -rf $dir/done/services.jar $dir/module/system/framework
+sudo cp -rf $dir/bin/services.jar $dir/module/system/framework
 
 if [[ ! -d $dir/jar_temp ]]; then
     mkdir $dir/jar_temp
