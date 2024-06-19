@@ -26,8 +26,10 @@ repM() {
 }
 
 services() {
-    $apkE d -f -i $dir/services.jar -o $dir/services.out  > /dev/null 2>&1
+    echo "Running apkE decompilation..."
+    $apkE d -f -i $dir/services.jar -o $dir/services.out > /dev/null 2>&1
 
+    echo "Searching and modifying smali files..."
     s0=$(find -name "PermissionManagerServiceImpl.smali")
     [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
     [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
@@ -47,22 +49,31 @@ services() {
     s4=$(find -name "PackageManagerServiceUtils.smali")
     [[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
 
-    s5==$(find -name "ReconcilePackageUtils.smali")
+    s5=$(find -name "ReconcilePackageUtils.smali")
     [[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
 
-    s6==$(find -name "ScanPackageUtils.smali")
+    s6=$(find -name "ScanPackageUtils.smali")
     [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
 
     repM 'isPlatformSigned' true 'PackageManagerService$PackageManagerInternalImpl.smali'
     repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
 
+    echo "Running apkE compilation..."
     $apkE b -f -i $dir/services.out -o $dir/done/services.jar > /dev/null 2>&1
+
+    if [[ -f $dir/done/services.jar ]]; then
+        echo "services.jar created successfully."
+    else
+        echo "Failed to create services.jar."
+    fi
 }
 
+echo "Setting up directories..."
 sudo cp -rf $dir/done/services.jar $dir/module/system/framework
 
 if [[ ! -d $dir/jar_temp ]]; then
     mkdir $dir/jar_temp
 fi
 
+echo "Starting services function..."
 services
