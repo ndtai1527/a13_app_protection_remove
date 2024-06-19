@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ROM_URL:
-        description: 'Services.jar Url'
+        description: 'Services.jar URL'
         required: true
         default: ''
 
@@ -21,7 +21,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-       
 
       - name: Setting up
         run: |
@@ -37,6 +36,7 @@ jobs:
       - name: Download Services.jar
         run: |
           axel -n $(nproc) ${{ github.event.inputs.ROM_URL }}
+          mv $(basename ${{ github.event.inputs.ROM_URL }}) services.jar
 
       - name: PATCH-ING
         run: |
@@ -44,8 +44,8 @@ jobs:
           ./test.sh
 
       - name: Upload a Build Artifact
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3
         with:
           name: services_patched.zip
-          path: ./module/*
+          path: ./module/system/framework/services.jar
           if-no-files-found: error
