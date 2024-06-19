@@ -4,8 +4,8 @@ dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
 repM="python3 $dir/bin/strS.py"
 apkE="java -jar $dir/bin/apkE.jar"
-mkdir -p $dir/services.out
-mkdir -p $dir/done
+mkdir $dir/services.out
+mkdir $dir/jar_temp
 
 repM() {
     if [[ $4 == "r" ]]; then
@@ -25,9 +25,13 @@ repM() {
     fi
 }
 
+if [[ -f $dir/services.jar ]]; then
+    sudo cp $dir/services.jar $dir/jar_temp
+fi
+
 services() {
     echo "Running apkE decompilation..."
-    $apkE d -f -i $dir/services.jar -o $dir/services.out > /dev/null 2>&1
+    $apkE d -f -i $dir/jar_temp/services.jar -o $dir/services.out > /dev/null 2>&1
 
     echo "Searching and modifying smali files..."
     s0=$(find -name "PermissionManagerServiceImpl.smali")
@@ -59,13 +63,8 @@ services() {
     repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
 
     echo "Running apkE compilation..."
-    $apkE b -f -i $dir/services.out -o $dir/done/services.jar > /dev/null 2>&1
+    $apkE b -f -i $dir/services.out -o $dir/bin/services.jar > /dev/null 2>&1
 
-    if [[ -f $dir/done/services.jar ]]; then
-        echo "services.jar created successfully."
-    else
-        echo "Failed to create services.jar."
-    fi
 }
 
 echo "Setting up directories..."
