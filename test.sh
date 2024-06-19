@@ -4,7 +4,7 @@ dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
 repM="python3 $dir/bin/strS.py"
 apkE="java -jar $dir/bin/apkE.jar"
-mkdir $dir/services.out
+mkdir -p $dir/tmp/services/
 mkdir $dir/jar_temp
 
 repM() {
@@ -30,49 +30,45 @@ if [[ -f $dir/services.jar ]]; then
     sudo cp $dir/services.jar $dir/jar_temp
 fi
 
-services() {
-    echo "Running apkE decompilation..."
-    $apkE d -f -i $dir/jar_temp/services.jar -o $dir/services.out > /dev/null 2>&1    
-    echo "Searching and modifying smali files..."
-    s0=$(find -name "PermissionManagerServiceImpl.smali")
-    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
-    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
-    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
-    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
-    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
 
-    s1=$(find -name "PermissionManagerServiceStub.smali")
-    [[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
+echo "Running apkE decompilation..."
+$apkE d -f -i $dir/jar_temp/services.jar -o $dir/tmp/services  > /dev/null 2>&1  
+echo "Searching and modifying smali files..."
+s0=$(find -name "PermissionManagerServiceImpl.smali")
+[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
+[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
+[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
+[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
+[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
 
-    s2=$(find -name "ParsingPackageUtils.smali")
-    [[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini $s2
+s1=$(find -name "PermissionManagerServiceStub.smali")
+[[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
 
-    s3=$(find -name "PackageManagerService\$PackageManagerInternalImpl.smali")
-    [[ -f $s3 ]] && $repS $dir/signature/PackageManagerService\$PackageManagerInternalImpl/isPlatformSigned.config.ini $s3
+s2=$(find -name "ParsingPackageUtils.smali")
+[[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini $s2
 
-    s4=$(find -name "PackageManagerServiceUtils.smali")
-    [[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
+s3=$(find -name "PackageManagerService\$PackageManagerInternalImpl.smali")
+[[ -f $s3 ]] && $repS $dir/signature/PackageManagerService\$PackageManagerInternalImpl/isPlatformSigned.config.ini $s3
 
-    s5=$(find -name "ReconcilePackageUtils.smali")
-    [[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
+s4=$(find -name "PackageManagerServiceUtils.smali")
+[[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
 
-    s6=$(find -name "ScanPackageUtils.smali")
-    [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
+s5=$(find -name "ReconcilePackageUtils.smali")
+[[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
 
-    repM 'isPlatformSigned' true 'PackageManagerService$PackageManagerInternalImpl.smali'
-    repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
+s6=$(find -name "ScanPackageUtils.smali")
+[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
 
-    echo "Running apkE compilation..."
-    $apkE b -f -i $dir/services.out -o $dir/bin/services.jar > /dev/null 2>&1
+repM 'isPlatformSigned' true 'PackageManagerService$PackageManagerInternalImpl.smali'
+repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
 
-}
+echo "Running apkE compilation..."
+$apkE b -f -i $dir/tmp/services -o $dir/tmp/services_patched.jar > /dev/null 2>&1
+
+
 
 echo "Setting up directories..."
-sudo cp -rf $dir/bin/services.jar $dir/module/system/framework
-
-if [[ ! -d $dir/jar_temp ]]; then
-    mkdir $dir/jar_temp
-fi
+sudo cp -rf $dir/tmp/services_patched.jar $dir/module/system/framework
 
 echo "Starting services function..."
-services
+
