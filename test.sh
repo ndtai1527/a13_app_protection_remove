@@ -64,10 +64,8 @@ repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
 echo "Running apkE compilation..."
 $apkE b -f -i $dir/tmp/services -o $dir/tmp/services_patched.jar > /dev/null 2>&1
 
-
-
 echo "Setting up directories..."
-sudo cp -rf $dir/tmp/services_patched.jar $dir/module/system/framework
+cp $dir/tmp/services_patched.jar $dir/module/system/framework
 
 echo "Starting services function..."
 
