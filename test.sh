@@ -3,32 +3,9 @@
 dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
 repM="python3 $dir/bin/strS.py"
-apktool="java -jar $dir/bin/apktool.jar"
-
-apk_util() {
-    cd $dir || exit
-
-    if [[ $1 == "d" ]]; then
-        echo -ne "====> Patching $2 : "
-        if [[ -f $dir/services.jar ]]; then
-            sudo cp $dir/services.jar $dir/jar_temp || exit
-            sudo chown $(whoami) $dir/jar_temp/$2 || exit
-            $apktool d -o $dir/jar_temp/$2.out $dir/jar_temp/$2 >/dev/null 2>&1
-        fi
-    elif [[ $1 == "a" ]]; then 
-        if [[ -d $dir/jar_temp/$2.out ]]; then
-            $apktool b $dir/jar_temp/$2.out -o $dir/jar_temp/$2
-            zipalign 4 $dir/jar_temp/$2 $dir/jar_temp/$2-aligned
-            if [[ -f $dir/jar_temp/$2-aligned ]]; then
-                sudo cp -rf $dir/jar_temp/$2-aligned $dir/module/system/framework
-                echo "Success"
-                rm -rf $dir/jar_temp/$2.out $dir/jar_temp/$2 $dir/jar_temp/$2-aligned
-            else
-                echo "Fail"
-            fi
-        fi
-    fi
-}
+apkE="java -jar $dir/bin/apkE.jar"
+mkdir -p $dir/services.out
+mkdir -p $dir/done
 
 repM() {
     if [[ $4 == "r" ]]; then
@@ -49,51 +26,40 @@ repM() {
 }
 
 services() {
-    apk_util d "services.jar"
+    $apkE d -f -i $dir/services.jar -o $dir/services.out  > /dev/null 2>&1
 
-    # patch signature
-    local files=("PermissionManagerServiceImpl.smali" "PermissionManagerServiceStub.smali" 
-                 "ParsingPackageUtils.smali" "PackageManagerService\$PackageManagerInternalImpl.smali" 
-                 "PackageManagerServiceUtils.smali" "ReconcilePackageUtils.smali" "ScanPackageUtils.smali")
+    s0=$(find -name "PermissionManagerServiceImpl.smali")
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
 
-    for file in "${files[@]}"; do
-        smali_file=$(find . -name "$file")
-        if [[ -f $smali_file ]]; then
-            case $file in
-                "PermissionManagerServiceImpl.smali")
-                    $repS $dir/bin/apr/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $smali_file
-                    $repS $dir/bin/apr/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $smali_file
-                    $repS $dir/bin/apr/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $smali_file
-                    $repS $dir/bin/apr/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $smali_file
-                    $repS $dir/bin/apr/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $smali_file
-                    ;;
-                "PermissionManagerServiceStub.smali")
-                    echo "$(cat $dir/bin/apr/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini)" >> $smali_file
-                    ;;
-                "ParsingPackageUtils.smali")
-                    $repS $dir/bin/apr/ParsingPackageUtils/getSigningDetails.config.ini $smali_file
-                    ;;
-                "PackageManagerService\$PackageManagerInternalImpl.smali")
-                    $repS $dir/bin/apr/'PackageManagerService$PackageManagerInternalImpl'/isPlatformSigned.config.ini $smali_file
-                    ;;
-                "PackageManagerServiceUtils.smali")
-                    $repS $dir/bin/apr/PackageManagerServiceUtils/verifySignatures.config.ini $smali_file
-                    ;;
-                "ReconcilePackageUtils.smali")
-                    $repS $dir/bin/apr/ReconcilePackageUtils/reconcilePackages.config.ini $smali_file
-                    ;;
-                "ScanPackageUtils.smali")
-                    $repS $dir/bin/apr/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $smali_file
-                    ;;
-            esac
-        fi
-    done
+    s1=$(find -name "PermissionManagerServiceStub.smali")
+    [[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
+
+    s2=$(find -name "ParsingPackageUtils.smali")
+    [[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini $s2
+
+    s3=$(find -name "PackageManagerService\$PackageManagerInternalImpl.smali")
+    [[ -f $s3 ]] && $repS $dir/signature/PackageManagerService\$PackageManagerInternalImpl/isPlatformSigned.config.ini $s3
+
+    s4=$(find -name "PackageManagerServiceUtils.smali")
+    [[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
+
+    s5==$(find -name "ReconcilePackageUtils.smali")
+    [[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
+
+    s6==$(find -name "ScanPackageUtils.smali")
+    [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
 
     repM 'isPlatformSigned' true 'PackageManagerService$PackageManagerInternalImpl.smali'
     repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
 
-    apk_util a "services.jar"
+    $apkE b -f -i $dir/services.out -o $dir/done/services.jar > /dev/null 2>&1
 }
+
+sudo cp -rf $dir/done/services.jar $dir/module/system/framework
 
 if [[ ! -d $dir/jar_temp ]]; then
     mkdir $dir/jar_temp
