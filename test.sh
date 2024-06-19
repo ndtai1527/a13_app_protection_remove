@@ -26,13 +26,13 @@ repM() {
 }
 
 if [[ -f $dir/services.jar ]]; then
+    mkdir $dir/jar_temp
     sudo cp $dir/services.jar $dir/jar_temp
 fi
 
 services() {
     echo "Running apkE decompilation..."
-    $apkE d -f -i $dir/jar_temp/services.jar -o $dir/services.out > /dev/null 2>&1
-
+    $apkE d -f -i $dir/jar_temp/services.jar -o $dir/services.out > /dev/null 2>&1    
     echo "Searching and modifying smali files..."
     s0=$(find -name "PermissionManagerServiceImpl.smali")
     [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
