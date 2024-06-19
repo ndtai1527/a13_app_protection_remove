@@ -29,7 +29,7 @@ repM() {
 sudo cp $dir/services.jar $dir/jar_temp
 
 
-
+cd $dir
 echo "Running apkE decompilation..."
 $apkE d -f -i $dir/jar_temp/services.jar -o $dir/tmp/services  > /dev/null 2>&1  
 echo "Searching and modifying smali files..."
