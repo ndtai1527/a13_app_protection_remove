@@ -3,9 +3,27 @@
 # Variables
 dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
+repM="python3 $dir/bin/strS.py"
 tmp_dir="$dir/smali_tmp"
 
 echo "Starting script in directory: $dir"
+
+repM () {
+	if [[ $4 == "r" ]]; then
+		if [[ -f $3 ]]; then
+			$repM $1 $2 $3
+		fi
+	elif [[ $4 == "f" ]]; then
+		for i in $3; do
+			$repM $1 $2 $i
+		done
+	else
+		file=$(sudo find -name $3)
+		if [[ $file ]]; then
+			$repM $1 $2 $file
+		fi
+	fi
+}
 
 # Function to handle JAR operations
 jar_util() {
@@ -115,7 +133,7 @@ services() {
 
     s6="$tmp_dir/ScanPackageUtils.smali"
     [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
-
+    
     # Copy the modified files back to their original locations
     for file in "$tmp_dir"/*.smali; do
         base_name=$(basename $file)
@@ -129,7 +147,12 @@ services() {
     # Clean up temporary directory
     rm -rf $tmp_dir
 
+    repM 'isPlatformSigned' true 'PackageManagerService$PackageManagerInternalImpl.smali'
+	repM 'isSignedWithPlatformKey' true 'PackageImpl.smali'
+
     jar_util a "services.jar" fw
+
+    
 }
 
 # Ensure jar_temp directory exists
