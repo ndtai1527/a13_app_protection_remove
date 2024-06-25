@@ -83,7 +83,7 @@ services() {
 
     # Find and copy the files to the temporary directory
     for file in "${files[@]}"; do
-        src_file=$(find $dir/jar_temp/services.jar.out -name "$file")
+        src_file=$(find $dir/jar_temp/services.jar.out -maxdepth 1 -name "$file")
         if [[ -f $src_file ]]; then
             cp $src_file $tmp_dir/
             echo "Copied $src_file to $tmp_dir"
@@ -119,7 +119,7 @@ services() {
     # Copy the modified files back to their original locations
     for file in "$tmp_dir"/*.smali; do
         base_name=$(basename $file)
-        dest_file=$(find $dir/jar_temp/services.jar.out -name "$base_name")
+        dest_file=$(find $dir/jar_temp/services.jar.out -maxdepth 1 -name "$base_name")
         if [[ -f $file ]]; then
             cp $file $dest_file
             echo "Copied $file to $dest_file"
