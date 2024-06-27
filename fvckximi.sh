@@ -9,9 +9,6 @@ jar_util()
 	if [[ $3 == "fw" ]]; then 
 		bak="java -jar $dir/bin/baksmali.jar d"
 		sma="java -jar $dir/bin/smali.jar a"
-	else
-		bak="java -jar $dir/bin/baksmali-2.5.2.jar d"
-		sma="java -jar $dir/bin/smali-2.5.2.jar a"
 	fi
 
 	if [[ $1 == "d" ]]; then
