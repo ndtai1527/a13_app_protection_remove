@@ -1,7 +1,7 @@
 #!/bin/bash
 dir=$(pwd)
 repS="python3 $dir/bin/strRep.py"
-
+tmp_dir="$dir/smali_tmp"
 jar_util() 
 {
 	cd $dir
