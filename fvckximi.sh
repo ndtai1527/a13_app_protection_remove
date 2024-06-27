@@ -67,42 +67,67 @@ jar_util()
 
 
 services() {
+    jar_util d "services.jar" fw
 
-	lang_dir="$dir/module/lang"
+    # Create temporary directory
+    [[ ! -d $tmp_dir ]] && mkdir $tmp_dir
 
-	jar_util d "services.jar" fw
+    # Files to be patched
+    files=("PermissionManagerServiceImpl.smali" "PermissionManagerServiceStub.smali" "ParsingPackageUtils.smali"
+           "PackageManagerService\$PackageManagerInternalImpl.smali" "PackageManagerServiceUtils.smali"
+           "ReconcilePackageUtils.smali" "ScanPackageUtils.smali")
 
-	#patch signature
+    # Find and copy the files to the temporary directory
+    for file in "${files[@]}"; do
+        src_file=$(find $dir/jar_temp/services.jar.out -maxdepth 1 -name "$file")
+        if [[ -f $src_file ]]; then
+            cp $src_file $tmp_dir/
+            echo "Copied $src_file to $tmp_dir"
+        else
+            echo "File $file not found in $dir/jar_temp/services.jar.out"
+        fi
+    done
 
-	s0=$(find -name "PermissionManagerServiceImpl.smali")
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
+    # Apply strRep.py on the copied files
+    s0="$tmp_dir/PermissionManagerServiceImpl.smali"
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
 
-	s1=$(find -name "PermissionManagerServiceStub.smali")
-	[[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
-	
-	s2=$(find -name "ParsingPackageUtils.smali")
-	[[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini $s2
+    s1="$tmp_dir/PermissionManagerServiceStub.smali"
+    [[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
 
-	s3=$(find -name 'PackageManagerService$PackageManagerInternalImpl.smali' )
-	[[ -f $s3 ]] && $repS $dir/signature/'PackageManagerService$PackageManagerInternalImpl'/isPlatformSigned.config.ini $s3
+    s2="$tmp_dir/ParsingPackageUtils.smali"
+    [[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini $s2
 
-	s4=$(find -name "PackageManagerServiceUtils.smali")
-	[[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
+    s3="$tmp_dir/PackageManagerService\$PackageManagerInternalImpl.smali"
+    [[ -f $s3 ]] && $repS $dir/signature/PackageManagerService\$PackageManagerInternalImpl/isPlatformSigned.config.ini $s3
 
-	s5=$(find -name "ReconcilePackageUtils.smali")
-	[[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
+    s4="$tmp_dir/PackageManagerServiceUtils.smali"
+    [[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
 
-	s6=$(find -name "ScanPackageUtils.smali")
-	[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
-	#[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/applyPolicy.configs.ini $s6
-	
-	jar_util a "services.jar" fw
+    s5="$tmp_dir/ReconcilePackageUtils.smali"
+    [[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
+
+    s6="$tmp_dir/ScanPackageUtils.smali"
+    [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
+
+    # Copy the modified files back to their original locations
+    for file in "$tmp_dir"/*.smali; do
+        base_name=$(basename $file)
+        dest_file=$(find $dir/jar_temp/services.jar.out -maxdepth 1 -name "$base_name")
+        if [[ -f $file ]]; then
+            cp $file $dest_file
+            echo "Copied $file to $dest_file"
+        else
+            echo "Modified file $file not found in $tmp_dir"
+        fi
+    done
+
+    jar_util a "services.jar" fw  
 }
-
 if [[ ! -d $dir/jar_temp ]]; then
 
 	mkdir $dir/jar_temp
