@@ -31,8 +31,8 @@ jar_util() {
     echo "Inside jar_util, current directory: $(pwd)"
     
     if [[ $3 == "fw" ]]; then 
-        bak="java -jar $dir/bin/baksmali.jar d"
-        sma="java -jar $dir/bin/smali.jar a"
+        bak="java -jar $dir/bin/baksmali-3.0.5.jar d"
+        sma="java -jar $dir/bin/smali-3.0.5.jar a"
     fi
 
     if [[ $1 == "d" ]]; then
