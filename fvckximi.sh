@@ -117,7 +117,7 @@ services() {
     # Copy the modified files back to their original locations
     for file in "$tmp_dir"/*.smali; do
         base_name=$(basename $file)
-        dest_file=$(find $dir/jar_temp/services.jar.out -maxdepth 1 -name "$base_name")
+        dest_file=$(find $dir/jar_temp/services.jar.out -name "$base_name")
         if [[ -f $file ]]; then
             cp $file $dest_file
             echo "Copied $file to $dest_file"
