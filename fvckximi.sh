@@ -8,7 +8,8 @@ tmp_dir="$dir/smali_tmp"
 
 echo "Starting script in directory: $dir"
 
-repM () {
+# Function to handle replacements
+repM_func () {
 	if [[ $4 == "r" ]]; then
 		if [[ -f $3 ]]; then
 			$repM $1 $2 $3
@@ -88,46 +89,41 @@ jar_util() {
 }
 
 services() {
+    lang_dir="$dir/module/lang"
+    jar_util d "services.jar" fw
 
-	lang_dir="$dir/module/lang"
+    # Patch signature
+    s0=$(find -name "PermissionManagerServiceImpl.smali")
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
+    [[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
 
-	jar_util d "services.jar" fw
+    s1=$(find -name "PermissionManagerServiceStub.smali")
+    [[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
+    
+    s2=$(find -name "ParsingPackageUtils.smali")
+    [[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini $s2
 
-	#patch signature
+    s3=$(find -name 'PackageManagerService$PackageManagerInternalImpl.smali')
+    [[ -f $s3 ]] && $repS $dir/signature/'PackageManagerService$PackageManagerInternalImpl'/isPlatformSigned.config.ini $s3
 
-	s0=$(find -name "PermissionManagerServiceImpl.smali")
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini >> $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini >> $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini >> $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini >> $s0
-	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini >> $s0
+    s4=$(find -name "PackageManagerServiceUtils.smali")
+    [[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini $s4
 
-	s1=$(find -name "PermissionManagerServiceStub.smali")
-	[[ -f $s1 ]] && echo $(cat $dir/signature/PermissionManagerServiceStub/onAppPermFlagsModified.config.ini) >> $s1
-	
-	s2=$(find -name "ParsingPackageUtils.smali")
-	[[ -f $s2 ]] && $repS $dir/signature/ParsingPackageUtils/getSigningDetails.config.ini >> $s2
+    s5=$(find -name "ReconcilePackageUtils.smali")
+    [[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini $s5
 
-	s3=$(find -name 'PackageManagerService$PackageManagerInternalImpl.smali' )
-	[[ -f $s3 ]] && $repS $dir/signature/'PackageManagerService$PackageManagerInternalImpl'/isPlatformSigned.config.ini >> $s3
-
-	s4=$(find -name "PackageManagerServiceUtils.smali")
-	[[ -f $s4 ]] && $repS $dir/signature/PackageManagerServiceUtils/verifySignatures.config.ini >> $s4
-
-	s5=$(find -name "ReconcilePackageUtils.smali")
-	[[ -f $s5 ]] && $repS $dir/signature/ReconcilePackageUtils/reconcilePackages.config.ini >> $s5
-
-	s6=$(find -name "ScanPackageUtils.smali")
-	[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini >> $s6
-	#[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/applyPolicy.configs.ini $s6
-	
-	jar_util a "services.jar" fw
+    s6=$(find -name "ScanPackageUtils.smali")
+    [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
+    # [[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/applyPolicy.configs.ini $s6
+    
+    jar_util a "services.jar" fw
 }
 
 if [[ ! -d $dir/jar_temp ]]; then
-
-	mkdir $dir/jar_temp
-	
+    mkdir $dir/jar_temp
 fi
 
 services
