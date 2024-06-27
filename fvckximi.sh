@@ -69,9 +69,9 @@ services() {
     [[ ! -d $tmp_dir ]] && mkdir $tmp_dir
 
     # Files to be patched
-    files=("PermissionManagerServiceImpl.smali" "PermissionManagerServiceStub.smali" "ParsingPackageUtils.smali"
-           "PackageManagerService\$PackageManagerInternalImpl.smali" "PackageManagerServiceUtils.smali"
-           "ReconcilePackageUtils.smali" "ScanPackageUtils.smali")
+    files=("PermissionManagerServiceImpl" "PermissionManagerServiceStub" "ParsingPackageUtils"
+           "PackageManagerService\$PackageManagerInternalImpl" "PackageManagerServiceUtils"
+           "ReconcilePackageUtils" "ScanPackageUtils")
 
     echo "Checking for files in $dir/jar_temp/services.jar.out"
     # Find and copy the files to the temporary directory
