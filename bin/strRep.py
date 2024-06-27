@@ -6,7 +6,7 @@ def lineNumByPhrase(phrase, source, isText=0, startsAt=0):
         if isText == 1 or isText == True:
             source = source.splitlines()
         for (i, line) in enumerate(source):
-            if i >= startsAt and line.startswith(phrase):
+            if i >= startsAt and phrase in line.strip():
                 return i
     else:
         with open(source, 'r') as f:
@@ -33,8 +33,8 @@ if __name__ == "__main__":
         ini = ConfigObj(str(sys.argv[1]))
         config = ini['main']
         replaceFile = str(sys.argv[2])
-        phraseStart = config['phraseStart']
-        phraseEnd = config['phraseEnd']
+        phraseStart = config['phraseStart'].strip()
+        phraseEnd = config['phraseEnd'].strip()
         replaceWith = config['replaceWith']
         
         startIndex = lineNumByPhrase(phraseStart, replaceFile)
