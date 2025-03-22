@@ -1,0 +1,18 @@
+image: ubuntu:latest
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - apt-get update && apt-get install -y git wget zip unzip axel python3 python3-pip zipalign apksigner xmlstarlet
+    - pip3 install ConfigObj
+    - echo "Setting Vietnam timezone"
+    - sudo timedatectl set-timezone Asia/Ho_Chi_Minh
+    - axel -n $(nproc) $ROM_URL  # Replace $ROM_URL with the actual URL for Services.jar
+    - chmod 777 -R *
+    - ./fvckximi.sh  # Assuming the script to patch Services.jar is named fvckximi.sh
+  artifacts:
+    paths:
+      - module/*  # Upload

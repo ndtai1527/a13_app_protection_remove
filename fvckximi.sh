@@ -7,11 +7,11 @@ jar_util()
 	cd $dir
 	#binary
 	if [[ $3 == "fw" ]]; then 
-		bak="java -jar $dir/bin/baksmali.jar d"
-		sma="java -jar $dir/bin/smali.jar a"
+		bak="java -jar $dir/bin/baksmali.jar d --api 33"
+		sma="java -jar $dir/bin/smali.jar a --api 33"
 	else
-		bak="java -jar $dir/bin/baksmali-2.5.2.jar d"
-		sma="java -jar $dir/bin/smali-2.5.2.jar a"
+		bak="java -jar $dir/bin/baksmali-2.5.2.jar d --api 33"
+		sma="java -jar $dir/bin/smali-2.5.2.jar a --api 33"
 	fi
 
 	if [[ $1 == "d" ]]; then
@@ -78,7 +78,9 @@ services() {
 	#patch signature
 
 	s0=$(find -name "PermissionManagerServiceImpl.smali")
+	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/updatePermissionFlags.config.ini $s0
 	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/shouldGrantPermissionBySignature.config.ini $s0
+	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermissionNotKill.config.ini $s0
 	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/revokeRuntimePermission.config.ini $s0
 	[[ -f $s0 ]] && $repS $dir/signature/PermissionManagerServiceImpl/grantRuntimePermission.config.ini $s0
 
@@ -99,7 +101,7 @@ services() {
 
 	s6=$(find -name "ScanPackageUtils.smali")
 	[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/assertMinSignatureSchemeIsValid.config.ini $s6
-	
+	#[[ -f $s6 ]] && $repS $dir/signature/ScanPackageUtils/applyPolicy.configs.ini $s6
 	
 	jar_util a "services.jar" fw
 }
