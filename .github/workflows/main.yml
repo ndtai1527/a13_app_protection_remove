@@ -13,7 +13,7 @@ jobs:
     
     steps:
        - name: Checkout
-         uses: actions/checkout@latest 
+         uses: actions/checkout@main 
        
        - name: Setting up
          run: |
@@ -35,7 +35,7 @@ jobs:
             sudo chmod 777 -R *
             ./fvckximi.sh
        - name: Upload a Build Artifact
-         uses: actions/upload-artifact@latest 
+         uses: actions/upload-artifact@v4.6.2
          with:
           # Artifact name
            name: services_patched.zip
